@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 
 public class Ball implements GameElementInterface{
 	
@@ -8,6 +9,7 @@ public class Ball implements GameElementInterface{
 	private int velX;	//Velocity on X-axis
 	private int velY;
 	private Color ballColor;
+	public Rectangle ballCollider;
 	
 	public Ball(int posX, int posY, int velX, int velY, Color ballColor){
 		this.posX = posX;
@@ -16,6 +18,7 @@ public class Ball implements GameElementInterface{
 		this.velX = velX;
 		this.velY = velY;
 		this.ballColor = ballColor;
+		this.ballCollider = this.createCollider(posX, posY, 20, 20);
 		
 	}
 	@Override
@@ -68,6 +71,10 @@ public class Ball implements GameElementInterface{
 		if (posY < 0 || posY > boundaryY){
 			velY = -velY;
 		}
+	}
+	
+	public Rectangle createCollider(int x, int y, int w, int h){
+		return new Rectangle(x, y, w, h);
 	}
 
 }
