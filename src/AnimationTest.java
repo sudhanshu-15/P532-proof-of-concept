@@ -50,7 +50,9 @@ public class AnimationTest extends JPanel implements ActionListener {
 //		this.add(td);
 //		tm.start();
 		for (Brick b : brickList){
-			b.draw(g);
+			if(!b.isDead()){
+				b.draw(g);
+			}
 		}
 	}
 
@@ -175,21 +177,22 @@ public class AnimationTest extends JPanel implements ActionListener {
 		Rectangle ballCollider = new Rectangle(b.getX(), b.getY(), 20, 20);
 		Brick delBrick = brickList.get(0);
 		Boolean hit = false;
-		int posi = 0;
+//		int posi = 0;
 		for(Brick br : brickList){
 			if(ballCollider.intersects(br.collider)){
 				hit = true;
 				delBrick = br;
-				posi = brickList.indexOf(br);
+//				posi = brickList.indexOf(br);
+				b.setVelY(-b.getVelY());
 			}
 		}
 		
 		if (hit){
-			BrickBreak bb = new BrickBreak(brickList, delBrick, posi, true);
+			BrickBreak bb = new BrickBreak(delBrick, true);
 			bb.execute();
 			bbl.add(bb);
 		}else{
-			BrickBreak bb = new BrickBreak(brickList, delBrick, posi, false);
+			BrickBreak bb = new BrickBreak(delBrick, false);
 			bb.execute();
 			bbl.add(bb);
 		}
