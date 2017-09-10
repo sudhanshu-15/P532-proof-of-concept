@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,22 +18,28 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-public class AnimationTest extends JPanel implements ActionListener {
+public class AnimationTest extends JPanel implements ActionListener, KeyListener {
 	
 	Timer tm = new Timer(30, this);
 	int velX = -10, velY = -10;
 	static List<Move> al = new ArrayList<Move>();
 	static List<BrickBreak> bbl = new ArrayList<BrickBreak>();
 	List<Brick> brickList = new ArrayList<Brick>();
+	static List<PaddleMove> pml = new ArrayList<PaddleMove>();
 	static Iterator<Move> li;
 	static Iterator<BrickBreak> libb;
+	static Iterator<PaddleMove> pi;
 	static boolean play = false;
 	static int i;
+	int count;
+	static boolean key = false;
+	static PaddleMove pm;
 	
 	
 	private int runningTime = 0;
 	
 	Ball b = new Ball(120, 10, velX, velY, Color.blue);
+	Paddle p = new Paddle(300, 500);
 //	Ball b1 = new Ball(11, 120, -2, -1, Color.GREEN);
 //	TimeDisplay td = new TimeDisplay();
 	
@@ -46,6 +54,7 @@ public class AnimationTest extends JPanel implements ActionListener {
 	public void paint(Graphics g){
 		super.paint(g);
 		b.draw(g);
+		p.draw(g);
 //		b1.draw(g);
 //		this.add(td);
 //		tm.start();
@@ -65,13 +74,19 @@ public class AnimationTest extends JPanel implements ActionListener {
 				// TODO Auto-generated method stub
 //				li = al.listIterator();
 				AnimationTest at = new AnimationTest();
+				at.addKeyListener(at);
 				at.spawnbricks();
 				JFrame jf = new JFrame();
 				jf.setSize(600,600);
 				jf.setTitle("Animation");
 				jf.setVisible(true);
+				//jf.setFocusable(true);
+				at.requestFocusInWindow();
+				at.setFocusable(true);
+				at.setFocusTraversalKeysEnabled(false);
 				jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				JButton start = new JButton("Start");
+				start.setFocusable(false);
 				start.addActionListener(new ActionListener(){
 
 					@Override
@@ -90,6 +105,7 @@ public class AnimationTest extends JPanel implements ActionListener {
 					
 				});
 				JButton undo = new JButton("Undo");
+				undo.setFocusable(false);
 				undo.addActionListener(new ActionListener(){
 
 					@Override
@@ -97,16 +113,20 @@ public class AnimationTest extends JPanel implements ActionListener {
 						// TODO Auto-generated method stub
 						Move undoMove = al.get(at.runningTime-1);
 						BrickBreak undoBrick = bbl.get(at.runningTime - 1);
+						PaddleMove undoPaddle = pml.get(at.runningTime - 1);
 						undoBrick.undo();
 						undoMove.undo();
+						undoPaddle.undo();
 						at.repaint();
 						at.runningTime--;
 						System.out.println(al.size());
 						System.out.println(bbl.size());
+						System.out.println(pml.size());
 					}
 					
 				});
 				JButton replay = new JButton("Replay");
+				replay.setFocusable(false);
 				replay.addActionListener(new ActionListener(){
 
 					@Override
@@ -114,6 +134,8 @@ public class AnimationTest extends JPanel implements ActionListener {
 						// TODO Auto-generated method stub
 						li = al.iterator();
 						libb = bbl.iterator();
+						pi = pml.iterator();
+						at.p.setX(300);
 						while(libb.hasNext()){
 							BrickBreak replayBrick = libb.next();
 							replayBrick.undo();
@@ -122,14 +144,16 @@ public class AnimationTest extends JPanel implements ActionListener {
 						at.repaint();
 						new Thread(){
 							public void run(){
-								while (li.hasNext() && libb.hasNext()){
+								while (li.hasNext() && libb.hasNext() && pi.hasNext()){
 									Move replayMove = (Move) li.next();
 									BrickBreak replayBrick = libb.next();
+									PaddleMove replayPaddle = pi.next();
 //									System.out.println(replayMove.initX + " " +replayMove.initY);
 //									replayMove.execute();
 //									at.repaint();
 									replayMove.undo();
 									replayBrick.execute();
+									replayPaddle.undo();
 									try {
 										SwingUtilities.invokeAndWait(new Runnable(){
 											@Override
@@ -172,12 +196,14 @@ public class AnimationTest extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		runningTime ++;
+		key = false;
 //		td.update(runningTime);
 		b.checkBounds(this.getWidth() - 20, this.getHeight() - 20);
 		Rectangle ballCollider = new Rectangle(b.getX(), b.getY(), 20, 20);
 		Brick delBrick = brickList.get(0);
 		Boolean hit = false;
 //		int posi = 0;
+		count = 0;
 		for(Brick br : brickList){
 			if(ballCollider.intersects(br.collider)){
 				hit = true;
@@ -196,6 +222,15 @@ public class AnimationTest extends JPanel implements ActionListener {
 			bb.execute();
 			bbl.add(bb);
 		}
+		
+		if(key){
+			pml.add(pm);
+		}else{
+			PaddleMove pmin = new PaddleMove(p, 1000);
+			pmin.execute();
+			pml.add(pmin);
+		}
+		
 		
 //		for (int i = 0; i < brickList.size(); i++){
 //			Brick delBrick = brickList.get(i);
@@ -242,6 +277,28 @@ public class AnimationTest extends JPanel implements ActionListener {
 				brickList.add(new Brick(x * 40, y*30));
 			}
 		}
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT){
+			pm = new PaddleMove(p, e.getKeyCode());
+			pm.execute();
+			key = true;
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
