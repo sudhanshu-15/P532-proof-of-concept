@@ -2,7 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-public class Ball implements GameElementInterface{
+public class Ball implements GameElementInterface, Observer{
 	
 	private int posX; 	//X-coordinate position of ball
 	private int posY;	//Y-coordinate position of ball
@@ -75,6 +75,17 @@ public class Ball implements GameElementInterface{
 	
 	public Rectangle createCollider(int x, int y, int w, int h){
 		return new Rectangle(x, y, w, h);
+	}
+	@Override
+	public void update() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void update(Observer observer) {
+		// TODO Auto-generated method stub
+		Move move = new Move((Ball) observer);
+		move.execute();
 	}
 
 }
