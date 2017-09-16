@@ -6,9 +6,10 @@ public class PaddleMove implements Command {
 	private int initX;
 	private int direction;
 	
-	public PaddleMove(Paddle p, int direction){
+	public PaddleMove(Paddle p){
 		this.paddle = p;
-		this.direction = direction;
+		this.direction = paddle.getDirection();
+		this.initX = paddle.getX();
 	}
 
 	@Override
@@ -31,6 +32,7 @@ public class PaddleMove implements Command {
 				paddle.setX(paddle.getX() - 30);
 			}
 		}
+		paddle.setDirection(1000);
 	}
 
 	@Override

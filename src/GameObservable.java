@@ -19,8 +19,9 @@ public class GameObservable implements Observable {
 	public void unregister(Observer o) {
 		// TODO Auto-generated method stub
 		int i = observerList.indexOf(o);
-		observerList.remove(i);
-
+		if(i >= 0){
+			observerList.remove(i);
+		}
 	}
 
 	@Override
@@ -35,10 +36,6 @@ public class GameObservable implements Observable {
 	
 	public void frameChanged(){
 		notifyObservers();
-	}
-	
-	public void setTime(int time){
-		
 	}
 
 }
